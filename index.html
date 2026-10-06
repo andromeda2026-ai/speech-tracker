@@ -3,126 +3,182 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="10K Speech">
 <script src="prompts.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
 <title>10,000-Hour Speech Tracker</title>
 <style>
-:root{--bg:#0f172a;--card:#1e293b;--ink:#f1f5f9;--mut:#94a3b8;--acc:#22c55e;--acc2:#38bdf8;--warn:#f59e0b}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding:env(safe-area-inset-top) 14px 40px}
-h1{font-size:18px;margin:16px 0 4px;color:var(--mut);font-weight:600;text-align:center}
-.card{background:var(--card);border-radius:16px;padding:16px;margin:12px 0}
-.big{font-size:44px;font-weight:800;text-align:center;letter-spacing:-1px}
-.sub{color:var(--mut);text-align:center;font-size:14px}
-.bar{height:10px;background:#334155;border-radius:6px;overflow:hidden;margin:10px 0 4px}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
-.row{display:flex;gap:10px}.row>*{flex:1}
-button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:16px 8px;color:#0f172a;background:var(--acc);font-size:17px}
-button.b2{background:var(--acc2)}button.ghost{background:#334155;color:var(--ink);font-weight:600;font-size:14px;padding:10px}
-input,select{font:inherit;width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0b1222;color:var(--ink)}
-.today{display:flex;justify-content:space-between;align-items:center;font-size:15px}
-.pill{padding:4px 10px;border-radius:99px;font-size:13px;font-weight:700}
-.ok{background:#14532d;color:#86efac}.star{background:#0c4a6e;color:#7dd3fc}.no{background:#422006;color:#fcd34d}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats div{background:#0b1222;border-radius:12px;padding:10px;text-align:center}.stats b{display:block;font-size:20px}.stats span{color:var(--mut);font-size:12px}
-ul{list-style:none;padding:0;margin:0}li{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #334155;font-size:14px}
-li small{color:var(--mut)}.x{background:none;color:#f87171;padding:4px 8px;font-size:16px}
-.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}.days i{aspect-ratio:1;border-radius:4px;background:#334155}.days i.h{background:#166534}.days i.f{background:#22c55e}.days i.s{background:#38bdf8}
-details summary{cursor:pointer;color:var(--mut)}
-.nudge{background:#422006;color:#fde68a;border-radius:14px;padding:12px 14px;margin:12px 0;font-weight:600;font-size:15px}.nudge.done{background:#14532d;color:#bbf7d0}
-#sess{position:fixed;inset:0;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top) + 12px) 14px 40px;display:none;z-index:9}
-#sess h2{margin:6px 0;font-size:22px}.blk{color:var(--mut);font-size:13px}.clock{font-size:52px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums}
-.pr li{display:block;padding:10px 0;font-size:16px;line-height:1.4}.pr b{color:var(--acc2)}
-.rate{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.rate label{font-size:13px;color:var(--mut)}
-.trend{font-size:14px;line-height:1.7}
+:root{--bg:#f5f5f7;--card:#fff;--ink:#1d1d1f;--mut:#86868b;--line:rgba(0,0,0,.08);--fill:#f5f5f7;--acc:#0071e3;--good:#1d1d1f;--track:#e8e8ed}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--mut:#98989d;--line:rgba(255,255,255,.1);--fill:#2c2c2e;--acc:#0a84ff;--track:#2c2c2e}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0 auto;max-width:560px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);padding:calc(env(safe-area-inset-top) + 20px) 18px calc(env(safe-area-inset-bottom) + 48px);-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+.num{font-variant-numeric:tabular-nums}
+header{padding:8px 4px 20px}
+header .eyebrow{font-size:13px;color:var(--mut);font-weight:500}
+header h1{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;font-size:28px;font-weight:700;margin:2px 0 0;letter-spacing:-.025em}
+.lbl{font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin:28px 4px 8px}
+.card{background:var(--card);border-radius:14px;padding:20px;margin:0}
+.card+.card{margin-top:12px}
+.balance .k{font-size:13px;color:var(--mut);font-weight:500}
+.big{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;font-size:52px;font-weight:600;letter-spacing:-.035em;line-height:1.05;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.big small{font-size:22px;font-weight:500;color:var(--mut);letter-spacing:-.01em;margin-left:4px}
+.sub{color:var(--mut);font-size:13px}
+.bar{height:4px;background:var(--track);border-radius:4px;overflow:hidden;margin:16px 0 10px}.bar>i{display:block;height:100%;background:var(--ink);border-radius:4px;transition:width .4s ease}
+.rows{background:var(--card);border-radius:14px;overflow:hidden}
+.r{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;font-size:15px;position:relative}
+.r+.r::before{content:"";position:absolute;top:0;left:20px;right:0;border-top:.5px solid var(--line)}
+.r .v{font-variant-numeric:tabular-nums;font-weight:500}
+.r .m{color:var(--mut)}
+.r.total{font-weight:600}.r.total .v{font-weight:600}
+.row{display:flex;gap:8px}.row>*{flex:1}
+button{font:inherit;font-size:15px;font-weight:500;border:0;border-radius:10px;padding:13px 8px;color:var(--ink);background:var(--fill);cursor:pointer;transition:opacity .15s}
+button:active{opacity:.6}
+button.pri{background:var(--acc);color:#fff}
+button.link{background:none;color:var(--acc);padding:6px 0;font-size:15px;width:auto}
+button.ghost{background:var(--fill);color:var(--ink)}
+.seg{display:flex;flex-direction:column;gap:0;background:var(--card);border-radius:14px;overflow:hidden}
+.seg button{background:none;border-radius:0;display:flex;justify-content:space-between;align-items:center;padding:16px 20px;text-align:left;position:relative;font-size:16px}
+.seg button+button::before{content:"";position:absolute;top:0;left:20px;right:0;border-top:.5px solid var(--line)}
+.seg button span{color:var(--mut);font-size:14px}
+.seg button b{font-weight:500}
+.seg button::after{content:"›";color:var(--mut);font-size:22px;line-height:1;margin-left:8px}
+.seg .t{display:flex;flex-direction:column;gap:2px}
+input,select{font:inherit;font-size:16px;width:100%;padding:12px 14px;border-radius:10px;border:0;background:var(--fill);color:var(--ink);-webkit-appearance:none;appearance:none}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:0}
+.today{display:flex;justify-content:space-between;align-items:baseline}
+.today .n{font-size:34px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.today .n small{font-size:15px;color:var(--mut);font-weight:500;margin-left:4px;letter-spacing:0}
+.pill{font-size:13px;font-weight:500;color:var(--mut)}
+.pill.ok,.pill.star{color:var(--ink)}
+.pill.ok::before{content:"● ";color:#34c759}.pill.star::before{content:"● ";color:var(--acc)}.pill.no::before{content:"○ "}
+.days{display:grid;grid-template-columns:repeat(14,1fr);gap:5px;margin-top:14px}.days i{aspect-ratio:1;border-radius:50%;background:var(--track)}.days i.h{background:var(--mut);opacity:.45}.days i.f{background:var(--ink)}.days i.s{background:var(--acc)}
+.legend{display:flex;gap:14px;margin-top:12px;font-size:12px;color:var(--mut)}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+details summary{cursor:pointer;color:var(--acc);font-size:15px;list-style:none;padding:14px 20px}
+details summary::-webkit-details-marker{display:none}
+details[open] summary{padding-bottom:6px}
+.dbody{padding:0 20px 18px}
+.nudge{margin:12px 4px 0;font-size:14px;color:var(--mut);line-height:1.45}.nudge.done{color:var(--ink)}
+ul{list-style:none;padding:0;margin:0}
+#hist li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 20px;font-size:15px;position:relative}
+#hist li+li::before{content:"";position:absolute;top:0;left:20px;right:0;border-top:.5px solid var(--line)}
+#hist .d{display:flex;flex-direction:column;gap:2px;min-width:0}#hist .d small{color:var(--mut);font-size:13px;overflow:hidden;text-overflow:ellipsis}
+#hist .amt{font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap}
+.x{background:none;color:var(--mut);padding:4px 0 4px 10px;font-size:15px;width:auto}
+#sess{position:fixed;inset:0;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top) + 20px) 18px calc(env(safe-area-inset-bottom) + 40px);display:none;z-index:9}
+#sess .wrap{max-width:560px;margin:0 auto}
+#sess h2{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;margin:4px 0 0;font-size:26px;font-weight:700;letter-spacing:-.025em}
+.blk{color:var(--mut);font-size:13px;font-weight:500}
+.clock{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;font-size:76px;font-weight:300;text-align:center;letter-spacing:-.04em;font-variant-numeric:tabular-nums;margin:28px 0 4px}
+#sTotal{text-align:center}
+.pr li{padding:14px 0;font-size:16px;line-height:1.5}.pr li+li{border-top:.5px solid var(--line)}.pr b{font-weight:600}
+.pr{padding:4px 20px!important}
+.rate{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.rate label{font-size:13px;color:var(--mut);display:flex;flex-direction:column;gap:6px}
+.trend .r .v{color:var(--ink)}
+.stack>*+*{margin-top:8px}
+#sess button.ghost{background:var(--card)}
+button{white-space:nowrap}
 </style>
 </head>
 <body>
-<h1>10,000-Hour Speech &amp; Vocabulary Tracker</h1>
+<header>
+  <div class="eyebrow" id="dateLine">Speech practice</div>
+  <h1>10,000 Hours</h1>
+</header>
 
-<div class="card">
+<div class="card balance">
+  <div class="k">Hours remaining</div>
   <div class="big" id="remain">10,000.0</div>
-  <div class="sub">hours to go</div>
   <div class="bar"><i id="prog" style="width:0"></i></div>
-  <div class="sub" id="done">0 h practiced · 0.00% complete</div>
+  <div class="sub num" id="done">0 h practiced · 0.00% complete</div>
 </div>
 
+<div class="lbl">Today</div>
+<div class="card">
+  <div class="today"><div class="n"><span id="todayMin">0</span><small>min</small></div><span id="todayPill" class="pill no">Goal: 30 min</span></div>
+  <div class="bar"><i id="todayBar" style="width:0"></i></div>
+  <div class="sub">30 minutes is the daily goal. 60 is the stretch.</div>
+</div>
 <div id="nudge" class="nudge"></div>
 
-<div class="card">
-  <b>Start a guided session</b>
-  <div class="sub" style="text-align:left;margin:4px 0 10px">Step-by-step prompts: warm-up, diction, vocabulary, speaking, review. Pick what your day allows.</div>
-  <div class="row"><button onclick="startSess(30)">30 min</button><button class="b2" onclick="startSess(60)">1 hour</button><button class="ghost" style="font-size:17px;font-weight:700" onclick="startSess(120)">2 hours</button></div>
+<div class="lbl">Guided session</div>
+<div class="seg">
+  <button onclick="startSess(30)"><div class="t"><b>30 minutes</b><span>Daily minimum</span></div></button>
+  <button onclick="startSess(60)"><div class="t"><b>1 hour</b><span>Stretch goal</span></div></button>
+  <button onclick="startSess(120)"><div class="t"><b>2 hours</b><span>Deep practice</span></div></button>
 </div>
+<div class="nudge">Warm-up, diction, vocabulary, speaking, and review, one step at a time.</div>
 
-<div class="card">
-  <div class="today"><span>Today: <b id="todayMin">0</b> min</span><span id="todayPill" class="pill no">Goal: 30 min</span></div>
-  <div class="bar"><i id="todayBar" style="width:0"></i></div>
-  <div class="sub" style="text-align:left">30 min = daily goal ✔ · 60 min = stretch ★</div>
-  <div class="sub" style="text-align:left;margin-top:10px">Practiced on your own? Log it quickly:</div>
-  <div class="row" style="margin-top:8px">
-    <button onclick="add(30)">+30 min</button>
-    <button class="b2" onclick="add(60)">+1 hour</button>
-  </div>
-  <details style="margin-top:12px"><summary>Other amount, earlier day, or note</summary>
-    <div class="row" style="margin-top:10px"><input id="cMin" type="number" min="1" max="1440" placeholder="Minutes"><input id="cDate" type="date"></div>
-    <input id="cNote" placeholder="What did you practice? (optional)" style="margin-top:10px">
-    <button class="ghost" style="width:100%;margin-top:10px" onclick="addCustom()">Log it</button>
+<div class="lbl">Log practice</div>
+<div class="rows">
+  <div class="r"><span>Practiced on your own</span><span class="row" style="flex:0 0 auto;gap:8px"><button class="ghost" style="padding:8px 14px" onclick="add(30)">+30 min</button><button class="ghost" style="padding:8px 14px" onclick="add(60)">+1 hr</button></span></div>
+  <details><summary>Other amount or date</summary>
+    <div class="dbody stack">
+      <div class="row"><input id="cMin" type="number" inputmode="numeric" min="1" max="1440" placeholder="Minutes"><input id="cDate" type="date"></div>
+      <input id="cNote" placeholder="Note (optional)">
+      <button class="pri" style="width:100%" onclick="addCustom()">Log</button>
+    </div>
   </details>
 </div>
 
+<div class="lbl">Summary</div>
+<div class="rows">
+  <div class="r"><span class="m">Current streak</span><span class="v"><span id="streak">0</span> days</span></div>
+  <div class="r"><span class="m">Best streak</span><span class="v"><span id="best">0</span> days</span></div>
+  <div class="r"><span class="m">This week</span><span class="v"><span id="week">0</span> min</span></div>
+  <div class="r total"><span>Finish at your pace</span><span class="v" id="eta">—</span></div>
+</div>
+
+<div class="lbl">Last 28 days</div>
 <div class="card">
-  <div class="stats">
-    <div><b id="streak">0</b><span>day streak (≥30 min)</span></div>
-    <div><b id="best">0</b><span>best streak</span></div>
-    <div><b id="week">0</b><span>min this week</span></div>
-    <div><b id="eta">—</b><span>finish at your pace</span></div>
-  </div>
-  <div class="sub" style="margin-top:10px;text-align:left">Last 28 days</div>
   <div class="days" id="days"></div>
+  <div class="legend"><span><i style="background:var(--mut);opacity:.45"></i>Some</span><span><i style="background:var(--ink)"></i>30 min</span><span><i style="background:var(--acc)"></i>60 min</span></div>
 </div>
 
-<div class="card">
-  <b>Improvement toward promotion</b>
-  <div class="trend" id="trend"></div>
-</div>
+<div class="lbl">Progress</div>
+<div class="rows trend" id="trend"></div>
 
-<div class="card">
-  <b>History</b>
-  <ul id="hist"></ul>
-</div>
+<div class="lbl">Activity</div>
+<div class="rows"><ul id="hist"></ul></div>
 
-<div class="card">
-  <details><summary>Backup &amp; settings</summary>
-    <p class="sub" style="text-align:left">Your data lives only on this phone, in this browser. Export a backup now and then.</p>
-    <div class="row"><button class="ghost" onclick="exportData()">Export backup</button><button class="ghost" onclick="document.getElementById('imp').click()">Import backup</button></div>
-    <input type="file" id="imp" accept="application/json" style="display:none" onchange="importData(this)">
-    <button class="ghost" style="width:100%;margin-top:10px" onclick="resetAll()">Reset everything</button>
+<div class="lbl">Data</div>
+<div class="rows">
+  <details><summary>Backup and reset</summary>
+    <div class="dbody stack">
+      <p class="sub" style="margin:0 0 6px">Your data stays on this phone, in this browser. Export a backup now and then.</p>
+      <div class="row"><button class="ghost" onclick="exportData()">Export</button><button class="ghost" onclick="document.getElementById('imp').click()">Import</button></div>
+      <input type="file" id="imp" accept="application/json" style="display:none" onchange="importData(this)">
+      <button class="ghost" style="width:100%;color:#ff3b30" onclick="resetAll()">Reset everything</button>
+    </div>
   </details>
 </div>
 
-<div id="sess">
+<div id="sess"><div class="wrap">
   <div class="blk" id="sBlkNo"></div>
   <h2 id="sTitle"></h2>
   <div class="clock" id="sClock">0:00</div>
   <div class="sub" id="sTotal"></div>
   <div class="bar"><i id="sBar" style="width:0"></i></div>
-  <div class="card"><ul class="pr" id="sPrompts"></ul></div>
-  <div id="sRate" class="card" style="display:none">
-    <b>How did it go?</b> <span class="sub">(1 = rough, 5 = great)</span>
+  <div class="card" style="padding:0"><ul class="pr" id="sPrompts"></ul></div>
+  <div id="sRate" class="card" style="display:none;margin-top:12px">
+    <div style="font-weight:600">How did it go?</div><div class="sub">1 is rough, 5 is great.</div>
     <div class="rate">
-      <label>Clarity / diction<select id="rClar"></select></label>
+      <label>Clarity<select id="rClar"></select></label>
       <label>Pace<select id="rPace"></select></label>
       <label>Confidence<select id="rConf"></select></label>
-      <label>Filler words counted<input id="rFill" type="number" min="0" placeholder="e.g. 12"></label>
+      <label>Filler words<input id="rFill" type="number" inputmode="numeric" min="0" placeholder="0"></label>
     </div>
-    <input id="rNote" placeholder="One thing to fix next time" style="margin-top:10px">
+    <input id="rNote" placeholder="One thing to fix next time" style="margin-top:12px">
   </div>
-  <div class="row" style="margin-top:6px"><button class="ghost" id="sPause" onclick="pauseSess()">Pause</button><button class="b2" id="sNext" onclick="nextBlk()">Next step</button></div>
-  <button style="width:100%;margin-top:10px" onclick="finishSess()" id="sFinish">Finish &amp; log</button>
-  <button class="ghost" style="width:100%;margin-top:10px" onclick="cancelSess()">Discard session</button>
-</div>
+  <div class="row" style="margin-top:16px"><button class="ghost" id="sPause" onclick="pauseSess()">Pause</button><button class="ghost" id="sNext" onclick="nextBlk()">Next step</button></div>
+  <button class="pri" style="width:100%;margin-top:8px" onclick="finishSess()" id="sFinish">Finish and log</button>
+  <button class="link" style="display:block;margin:14px auto 0" onclick="cancelSess()">Discard session</button>
+</div></div>
 
 <script>
 const KEY='tenK_speech_v1', GOAL_H=10000, DAILY=30, STRETCH=60;
@@ -136,12 +192,14 @@ function addCustom(){const m=document.getElementById('cMin'),d=document.getEleme
 function del(id){if(confirm('Remove this session? Its time goes back on the countdown.')){S.sessions=S.sessions.filter(s=>s.id!==id);save()}}
 function byDay(){const m={};S.sessions.forEach(s=>m[s.date]=(m[s.date]||0)+s.minutes);return m}
 function fmt(n,d=1){return n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d})}
+function niceDate(k){const d=new Date(k+'T12:00');return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:d.getFullYear()===new Date().getFullYear()?undefined:'numeric'})}
 function render(){
+  dateLine.textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
   const totMin=S.sessions.reduce((a,s)=>a+s.minutes,0),totH=totMin/60,rem=Math.max(0,S.startHours-totH),pct=totH/S.startHours*100;
   remain.textContent=fmt(rem);prog.style.width=Math.min(100,pct)+'%';
-  done.textContent=fmt(totH)+' h practiced · '+pct.toFixed(2)+'% complete';
+  done.textContent=fmt(totH)+' hours practiced · '+pct.toFixed(2)+'% complete';
   const bd=byDay(),t=bd[dkey()]||0;todayMin.textContent=t;todayBar.style.width=Math.min(100,t/STRETCH*100)+'%';
-  todayPill.className='pill '+(t>=STRETCH?'star':t>=DAILY?'ok':'no');todayPill.textContent=t>=STRETCH?'★ Stretch hit':t>=DAILY?'✔ Goal met':(DAILY-t)+' min to goal';
+  todayPill.className='pill '+(t>=STRETCH?'star':t>=DAILY?'ok':'no');todayPill.textContent=t>=STRETCH?'Stretch reached':t>=DAILY?'Goal met':(DAILY-t)+' min to goal';
   // streaks (today counts if met; if not met yet, streak runs through yesterday)
   let c=0,d=new Date();if((bd[dkey(d)]||0)<DAILY)d.setDate(d.getDate()-1);
   while((bd[dkey(d)]||0)>=DAILY){c++;d.setDate(d.getDate()-1)}streak.textContent=c;
@@ -154,7 +212,7 @@ function render(){
   let h='';for(let i=27;i>=0;i--){const x=new Date();x.setDate(x.getDate()-i);const m=bd[dkey(x)]||0;h+='<i title="'+dkey(x)+': '+m+' min" class="'+(m>=STRETCH?'s':m>=DAILY?'f':m>0?'h':'')+'"></i>'}days.innerHTML=h;
   renderNudge(t);renderTrend();
   hist.innerHTML=S.sessions.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.at.localeCompare(a.at)).slice(0,60).map(s=>
-    '<li><span>'+s.date+' · <b>'+s.minutes+' min</b>'+(s.mode==='guided'?' · guided':'')+(s.note?'<br><small>'+s.note.replace(/</g,'&lt;')+'</small>':'')+'</span><button class="x" onclick="del(\''+s.id+'\')">✕</button></li>').join('')||'<li><small>No sessions yet. Tap +30 min after today\'s practice.</small></li>';
+    '<li><span class="d"><span>'+niceDate(s.date)+(s.mode==='guided'?' · Guided':'')+'</span>'+(s.note?'<small>'+s.note.replace(/</g,'&lt;')+'</small>':'')+'</span><span style="display:flex;align-items:center"><span class="amt">'+s.minutes+' min</span><button class="x" aria-label="Remove" onclick="del(\''+s.id+'\')">✕</button></span></li>').join('')||'<li><small style="color:var(--mut)">No sessions yet. Start a guided session or tap +30 min.</small></li>';
 }
 
 // ---------- guided sessions ----------
@@ -200,19 +258,20 @@ function finishSess(){const min=Math.round(elapsed()/60000),planned=A.len;
   const t=byDay()[dkey()]||0;alert(t>=DAILY?'Logged '+min+' min. Daily goal met. Nice work!':'Logged '+min+' min. '+(DAILY-t)+' more minutes today to hit your 30.')}
 function cancelSess(){if(confirm('Discard this session without logging it?')){localStorage.removeItem(AKEY);A=null;clearInterval(tick);document.getElementById('sess').style.display='none'}}
 function renderNudge(t){const n=document.getElementById('nudge'),h=new Date().getHours(),left=DAILY-t;
-  if(t>=STRETCH){n.className='nudge done';n.textContent='★ '+t+' minutes today. Stretch goal hit. Rest easy.';return}
-  if(t>=DAILY){n.className='nudge done';n.textContent='✔ 30 minutes done today. Got time for more? Go for the hour.';return}
+  if(t>=STRETCH){n.className='nudge done';n.textContent=t+' minutes today. Stretch goal reached.';return}
+  if(t>=DAILY){n.className='nudge done';n.textContent='Daily goal met. Go for the hour if you have time.';return}
   n.className='nudge';n.textContent=t===0?(h>=19?'No practice yet today and the evening is going. Start a 30-minute session now. Your streak depends on it.':'Today\'s minimum is 30 minutes. Start a guided session when you get a window.'):(left+' minutes to go today. Finish your 30 before bed.')}
 function avg(a){a=a.filter(x=>x!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null}
 function renderTrend(){const g=S.sessions.filter(s=>s.mode==='guided').sort((a,b)=>a.at.localeCompare(b.at)),el=document.getElementById('trend');
   const words=new Set();g.forEach(s=>(s.words||[]).forEach(w=>words.add(w)));
-  if(!g.length){el.innerHTML='<span class="sub" style="text-align:left;display:block">Finish a guided session and rate it. Your clarity, pace, confidence, and filler-word trends will show here.</span>';return}
+  const R=(l,v)=>'<div class="r"><span class="m">'+l+'</span><span class="v">'+v+'</span></div>';
+  if(!g.length){el.innerHTML='<div class="r"><span class="sub">Finish and rate a guided session to see clarity, pace, confidence, filler words, and vocabulary here.</span></div>';return}
   const first=g.slice(0,5),last=g.slice(-5),row=(lab,k)=>{const a=avg(first.map(s=>s.ratings&&s.ratings[k])),b=avg(last.map(s=>s.ratings&&s.ratings[k]));
-    return a==null?'':lab+': '+(g.length>5?a.toFixed(1)+' → ':'')+b.toFixed(1)+' / 5<br>'};
+    return b==null?'':R(lab,(g.length>5&&a!=null?a.toFixed(1)+' → ':'')+b.toFixed(1)+' / 5')};
   const fa=avg(first.map(s=>s.fillers)),fb=avg(last.map(s=>s.fillers));
   el.innerHTML=row('Clarity / diction','clarity')+row('Pace','pace')+row('Confidence','confidence')+
-   (fb!=null?'Filler words per session: '+(g.length>5&&fa!=null?Math.round(fa)+' → ':'')+Math.round(fb)+'<br>':'')+
-   'Vocabulary words practiced: '+words.size+'<br>Guided sessions: '+g.length+(g.length>5?'<br><span class="sub">Comparing your first 5 sessions with your latest 5.</span>':'')}
+   (fb!=null?R('Filler words per session',(g.length>5&&fa!=null?Math.round(fa)+' → ':'')+Math.round(fb)):'')+
+   R('Vocabulary words',words.size)+'<div class="r total"><span>Guided sessions</span><span class="v">'+g.length+'</span></div>'+(g.length>5?'<div class="r"><span class="sub">First 5 sessions compared with your latest 5.</span></div>':'')}
 function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.download='speech-tracker-backup-'+dkey()+'.json';a.click()}
 function importData(inp){const f=inp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);if(!Array.isArray(d.sessions))throw 0;if(confirm('Replace current data with this backup ('+d.sessions.length+' sessions)?')){S=d;save()}}).catch(()=>alert('That file is not a tracker backup.'));inp.value=''}
 function resetAll(){if(confirm('Erase ALL sessions and start again at 10,000 hours?')&&confirm('Are you sure? Export a backup first if unsure.')){S={version:2,startHours:GOAL_H,sessions:[],wordCursor:0};localStorage.removeItem(AKEY);save()}}
