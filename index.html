@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#efede8">
 <meta name="color-scheme" content="light">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="10K Speech">
-<script src="prompts.js"></script>
+<script src="prompts.js?v=5"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
 <title>10,000-Hour Speech Tracker</title>
@@ -275,7 +276,9 @@ function exportData(){const a=document.createElement('a');a.href=URL.createObjec
 function importData(inp){const f=inp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);if(!Array.isArray(d.sessions))throw 0;if(confirm('Replace current data with this backup ('+d.sessions.length+' sessions)?')){S=d;save()}}).catch(()=>alert('That file is not a tracker backup.'));inp.value=''}
 function resetAll(){if(confirm('Erase ALL sessions and start again at 10,000 hours?')&&confirm('Are you sure? Export a backup first if unsure.')){S={version:2,startHours:GOAL_H,sessions:[],wordCursor:0};localStorage.removeItem(AKEY);save()}}
 document.getElementById('cDate').value=dkey();render();if(A)openSess();
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){const had=!!navigator.serviceWorker.controller;let rl=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl&&!A){rl=true;location.reload()}});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})})}
 </script>
 </body>
 </html>
