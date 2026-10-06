@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="10K Speech">
-<script src="prompts.js?v=5"></script>
+<script src="prompts.js?v=7"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
 <title>10,000-Hour Speech Tracker</title>
@@ -81,6 +81,12 @@ ul{list-style:none;padding:0;margin:0}
 .rate{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.rate label{font-size:13px;color:var(--mut);display:flex;flex-direction:column;gap:6px}
 .trend .r .v{color:var(--ink)}
 .stack>*+*{margin-top:8px}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 20px 16px}
+.chips button{padding:11px 0}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.grid3 label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:5px}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--card);padding:11px 18px;border-radius:12px;font-size:14px;opacity:0;transition:all .25s;pointer-events:none;z-index:20;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 #sess button.ghost{background:var(--card)}
 button{white-space:nowrap}
 </style>
@@ -122,6 +128,23 @@ button{white-space:nowrap}
       <div class="row"><input id="cMin" type="number" inputmode="numeric" min="1" max="1440" placeholder="Minutes"><input id="cDate" type="date"></div>
       <input id="cNote" placeholder="Note (optional)">
       <button class="pri" style="width:100%" onclick="addCustom()">Log</button>
+    </div>
+  </details>
+</div>
+
+<div class="lbl">Orai session</div>
+<div class="rows">
+  <div class="r" style="padding-bottom:10px"><span>Practiced in Orai</span><span class="sub">Tap the minutes</span></div>
+  <div class="chips"><button class="ghost" onclick="logOrai(5)">5</button><button class="ghost" onclick="logOrai(10)">10</button><button class="ghost" onclick="logOrai(15)">15</button><button class="ghost" onclick="logOrai(30)">30</button></div>
+  <details><summary>Custom minutes and Orai scores</summary>
+    <div class="dbody stack">
+      <input id="oMin" type="number" inputmode="numeric" min="1" max="1440" placeholder="Minutes">
+      <div class="grid3">
+        <label>Filler words<input id="oFill" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+        <label>Pace (wpm)<input id="oWpm" type="number" inputmode="numeric" min="40" max="400" placeholder="150"></label>
+        <label>Clarity %<input id="oClar" type="number" inputmode="numeric" min="0" max="100" placeholder="90"></label>
+      </div>
+      <button class="pri" style="width:100%" onclick="logOraiCustom()">Log Orai session</button>
     </div>
   </details>
 </div>
@@ -212,7 +235,7 @@ function render(){
   let h='';for(let i=27;i>=0;i--){const x=new Date();x.setDate(x.getDate()-i);const m=bd[dkey(x)]||0;h+='<i title="'+dkey(x)+': '+m+' min" class="'+(m>=STRETCH?'s':m>=DAILY?'f':m>0?'h':'')+'"></i>'}days.innerHTML=h;
   renderNudge(t);renderTrend();
   hist.innerHTML=S.sessions.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.at.localeCompare(a.at)).slice(0,60).map(s=>
-    '<li><span class="d"><span>'+niceDate(s.date)+(s.mode==='guided'?' · Guided':'')+'</span>'+(s.note?'<small>'+s.note.replace(/</g,'&lt;')+'</small>':'')+'</span><span style="display:flex;align-items:center"><span class="amt">'+s.minutes+' min</span><button class="x" aria-label="Remove" onclick="del(\''+s.id+'\')">✕</button></span></li>').join('')||'<li><small style="color:var(--mut)">No sessions yet. Start a guided session or tap +30 min.</small></li>';
+    '<li><span class="d"><span>'+niceDate(s.date)+(s.mode==='guided'?' · Guided':s.mode==='orai'?' · Orai':'')+'</span>'+(s.mode==='orai'&&(s.fillers!=null||s.wpm!=null||s.clarityPct!=null)?'<small>'+[s.fillers!=null?s.fillers+' fillers':'',s.wpm!=null?s.wpm+' wpm':'',s.clarityPct!=null?s.clarityPct+'% clarity':''].filter(Boolean).join(' · ')+'</small>':'')+(s.note?'<small>'+s.note.replace(/</g,'&lt;')+'</small>':'')+'</span><span style="display:flex;align-items:center"><span class="amt">'+s.minutes+' min</span><button class="x" aria-label="Remove" onclick="del(\''+s.id+'\')">✕</button></span></li>').join('')||'<li><small style="color:var(--mut)">No sessions yet. Start a guided session or tap +30 min.</small></li>';
 }
 
 // ---------- guided sessions ----------
@@ -262,16 +285,31 @@ function renderNudge(t){const n=document.getElementById('nudge'),h=new Date().ge
   if(t>=DAILY){n.className='nudge done';n.textContent='Daily goal met. Go for the hour if you have time.';return}
   n.className='nudge';n.textContent=t===0?(h>=19?'It\'s after 7 PM and no practice yet. Start a 30-minute session now, before bedtime.':'Today\'s minimum is 30 minutes. Start a guided session when you get a window.'):(left+' minutes to go today. Finish your 30 before bed.')}
 function avg(a){a=a.filter(x=>x!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null}
-function renderTrend(){const g=S.sessions.filter(s=>s.mode==='guided').sort((a,b)=>a.at.localeCompare(b.at)),el=document.getElementById('trend');
+function renderTrend(){const all=S.sessions.slice().sort((a,b)=>a.at.localeCompare(b.at)),g=all.filter(s=>s.mode==='guided'),o=all.filter(s=>s.mode==='orai'),el=document.getElementById('trend');
   const words=new Set();g.forEach(s=>(s.words||[]).forEach(w=>words.add(w)));
   const R=(l,v)=>'<div class="r"><span class="m">'+l+'</span><span class="v">'+v+'</span></div>';
-  if(!g.length){el.innerHTML='<div class="r"><span class="sub">Finish and rate a guided session to see clarity, pace, confidence, filler words, and vocabulary here.</span></div>';return}
+  if(!g.length&&!o.length){el.innerHTML='<div class="r"><span class="sub">Finish and rate a guided session, or log an Orai session with scores, to see clarity, pace, confidence, filler words, and vocabulary here.</span></div>';return}
+  const fl=(arr,k)=>{const a=arr.filter(s=>s[k]!=null);return a.length?{first:avg(a.slice(0,5).map(s=>s[k])),last:avg(a.slice(-5).map(s=>s[k])),n:a.length}:null};
+  const trendTxt=(t,d,suf)=>(t.n>5?t.first.toFixed(d)+' → ':'')+t.last.toFixed(d)+(suf||'');
   const first=g.slice(0,5),last=g.slice(-5),row=(lab,k)=>{const a=avg(first.map(s=>s.ratings&&s.ratings[k])),b=avg(last.map(s=>s.ratings&&s.ratings[k]));
     return b==null?'':R(lab,(g.length>5&&a!=null?a.toFixed(1)+' → ':'')+b.toFixed(1)+' / 5')};
-  const fa=avg(first.map(s=>s.fillers)),fb=avg(last.map(s=>s.fillers));
+  const F=fl(all.filter(s=>s.mode==='guided'||s.mode==='orai'),'fillers'),W=fl(o,'wpm'),C=fl(o,'clarityPct');
+  const om=o.reduce((a,s)=>a+s.minutes,0);
   el.innerHTML=row('Clarity / diction','clarity')+row('Pace','pace')+row('Confidence','confidence')+
-   (fb!=null?R('Filler words per session',(g.length>5&&fa!=null?Math.round(fa)+' → ':'')+Math.round(fb)):'')+
-   R('Vocabulary words',words.size)+'<div class="r total"><span>Guided sessions</span><span class="v">'+g.length+'</span></div>'+(g.length>5?'<div class="r"><span class="sub">First 5 sessions compared with your latest 5.</span></div>':'')}
+   (W?R('Pace in Orai',trendTxt(W,0,' wpm')):'')+(C?R('Clarity in Orai',trendTxt(C,0,'%')):'')+
+   (F?R('Filler words per session',trendTxt(F,0)):'')+
+   R('Vocabulary words',words.size)+R('Guided sessions',g.length)+
+   (o.length?R('Orai sessions',o.length+' · '+(om>=60?fmt(om/60)+' h':om+' min')):'')+
+   (g.length>5||(W&&W.n>5)||(F&&F.n>5)?'<div class="r"><span class="sub">Arrows compare your first 5 sessions with your latest 5.</span></div>':'')}
+
+// ---------- Orai sessions ----------
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),2200)}
+function oraiDone(min){const t=byDay()[dkey()]||0;toast('Orai '+min+' min logged'+(t>=DAILY?' · goal met':' · '+(DAILY-t)+' min to goal'))}
+function logOrai(min){add(min,dkey(),'',{mode:'orai'});oraiDone(min)}
+function logOraiCustom(){const n=id=>{const x=document.getElementById(id).value;return x===''?null:+x};const min=n('oMin');
+  if(!(min>0&&min<=1440))return alert('Enter the Orai minutes (1 to 1440).');
+  const ex={mode:'orai'},f=n('oFill'),w=n('oWpm'),c=n('oClar');if(f!=null)ex.fillers=f;if(w!=null)ex.wpm=w;if(c!=null)ex.clarityPct=Math.max(0,Math.min(100,c));
+  add(min,dkey(),'',ex);['oMin','oFill','oWpm','oClar'].forEach(id=>document.getElementById(id).value='');oraiDone(min)}
 function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.download='speech-tracker-backup-'+dkey()+'.json';a.click()}
 function importData(inp){const f=inp.files[0];if(!f)return;f.text().then(t=>{const d=JSON.parse(t);if(!Array.isArray(d.sessions))throw 0;if(confirm('Replace current data with this backup ('+d.sessions.length+' sessions)?')){S=d;save()}}).catch(()=>alert('That file is not a tracker backup.'));inp.value=''}
 function resetAll(){if(confirm('Erase ALL sessions and start again at 10,000 hours?')&&confirm('Are you sure? Export a backup first if unsure.')){S={version:2,startHours:GOAL_H,sessions:[],wordCursor:0};localStorage.removeItem(AKEY);save()}}
@@ -280,5 +318,6 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http')){const had
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!rl&&!A){rl=true;location.reload()}});
   navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})})}
 </script>
+<div id="toast"></div>
 </body>
 </html>
